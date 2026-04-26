@@ -1,34 +1,66 @@
 # ---------------------------
-# Terraform Core
+# Terraform
 # ---------------------------
 .terraform/
+**/.terraform/*
 .terraform.lock.hcl
-
-# Terraform state files (NEVER COMMIT)
 *.tfstate
 *.tfstate.*
-crash.log
-crash.*.log
-
-# Plan files (can contain sensitive data)
 *.tfplan
-
-# ---------------------------
-# CLI / Local overrides
-# ---------------------------
+terraform.log
+terraform.tfvars
+terraform.tfvars.json
+*.tfvars
+*.tfvars.json
 override.tf
 override.tf.json
 *_override.tf
 *_override.tf.json
-
-# Variable files (local only)
-terraform.tfvars
-terraform.tfvars.json
+crash.log
+crash.*.log
 
 # ---------------------------
-# Logs
+# Node / Dependencies
 # ---------------------------
-terraform.log
+node_modules/
+/node_modules
+package-lock.json
+.pnp
+.pnp.*
+.yarn/*
+!.yarn/patches
+!.yarn/plugins
+!.yarn/releases
+!.yarn/versions
+
+# ---------------------------
+# Build & Frameworks (Next.js / Vercel)
+# ---------------------------
+.next/
+out/
+build/
+/coverage
+.vercel
+*.tsbuildinfo
+next-env.d.ts
+
+# ---------------------------
+# Environment & Secrets
+# ---------------------------
+.env
+.env*
+*.pem
+*.key
+
+# ---------------------------
+# Logs & Debug
+# ---------------------------
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnpm-debug.log*
 
 # ---------------------------
 # IDE / OS
@@ -36,23 +68,3 @@ terraform.log
 .vscode/
 .idea/
 .DS_Store
-
-# ---------------------------
-# Azure / Cloud artifacts
-# ---------------------------
-*.pem
-*.key
-
-# Local terraform directories
-**/.terraform/*
-
-# .tfstate files
-*.tfstate
-*.tfstate.*
-
-# Crash log files
-crash.log
-
-# Sensitive vars files
-*.tfvars
-*.tfvars.json

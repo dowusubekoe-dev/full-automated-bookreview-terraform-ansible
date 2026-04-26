@@ -1,12 +1,21 @@
-- name: Update apt cache
+---
+- name: Install foundational packages
   apt:
-    update_cache: yes
-    cache_valid_time: 3600
-
-- name: Upgrade all packages
-  apt:
-    name:
-      - git
-      - curl
-      - unzip
+    name: [curl, git, wget, build-essential, mysql-client]
     state: present
+    update_cache: yes
+
+- name: Setup Node.js v18 LTS
+  shell: curl -fsSL https://deb.nodesource.com/setup_18.x | sudo -E bash -
+  args:
+    creates: /etc/apt/sources.list.d/nodesource.list
+
+- name: Install Node.js and PM2
+  apt:
+    name: nodejs
+    state: present
+
+- name: Install PM2 globally
+  npm:
+    name: pm2
+    global: yes

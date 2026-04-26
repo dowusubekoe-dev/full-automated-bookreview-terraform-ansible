@@ -120,7 +120,7 @@ resource "azurerm_mysql_flexible_server" "mysql" {
   location               = var.location
   administrator_login    = var.mysql_admin_username
   administrator_password = var.mysql_admin_password
-  sku_name               = "B_Standard_B1s"
+  sku_name               = "B_Standard_B1ms"
   version                = "8.0.21"
 
   storage {
@@ -144,4 +144,9 @@ resource "azurerm_mysql_flexible_server_firewall_rule" "allow_azure" {
   server_name         = azurerm_mysql_flexible_server.mysql.name
   start_ip_address    = "0.0.0.0"
   end_ip_address      = "0.0.0.0"
+}
+
+output "mysql_fqdn" {
+  value       = azurerm_mysql_flexible_server.mysql.fqdn
+  description = "The connection FQDN for the MySQL Flexible Server"
 }

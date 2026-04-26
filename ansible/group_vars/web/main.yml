@@ -1,0 +1,12 @@
+---
+app_repo: "https://github.com/book-review-app.git"
+app_port: 3001
+db_host: "bookreview-mysql-server.mysql.database.azure.com"
+mysql_admin_username: "bookreview_db_admin"
+mysql_admin_password: "BeABetterDevOpsEng2026!"
+db_name: "book_review_db"
+admin_username: "azureuser"
+jwt_secret: "your_jwt_secret"
+
+
+

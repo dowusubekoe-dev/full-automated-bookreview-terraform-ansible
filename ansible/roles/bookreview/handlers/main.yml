@@ -1,0 +1,10 @@
+---
+- name: Restart backend
+  become: true
+  become_user: "{{ admin_username }}"
+  shell: |
+    pm2 restart book-backend || pm2 start src/server.js --name "book-backend"
+    pm2 save
+  args:
+    chdir: "/home/{{ admin_username }}/app/backend"
+    executable: /bin/bash

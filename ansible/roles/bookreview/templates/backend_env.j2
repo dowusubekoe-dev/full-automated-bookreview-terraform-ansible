@@ -1,0 +1,15 @@
+# Database Configuration
+DB_HOST={{ db_host }}
+DB_NAME={{ db_name }}
+DB_USER={{ mysql_admin_username }}
+DB_PASS={{ mysql_admin_password }}
+DB_DIALECT=mysql
+
+# Application Port
+PORT={{ app_port }}
+
+# Authentication
+JWT_SECRET={{ jwt_secret }}
+
+# CORS - Allowing Nginx/Frontend to communicate
+ALLOWED_ORIGINS=http://localhost:3000,http://{{ ansible_host }}
