@@ -8,13 +8,14 @@
   become: true
   become_user: "{{ admin_username }}"
 
+# --- BACKEND TASKS ---
 - name: Install Backend dependencies
   npm:
     path: "/home/{{ admin_username }}/app/backend"
   become: true
   become_user: "{{ admin_username }}"
 
-- name: Deploy .env configuration
+- name: Deploy Backend .env configuration
   template:
     src: backend_env.j2
     dest: "/home/{{ admin_username }}/app/backend/.env"
@@ -23,7 +24,7 @@
   become_user: "{{ admin_username }}"
   notify: Restart backend
 
-- name: Start Application with PM2
+- name: Start Backend with PM2
   shell: |
     pm2 describe book-backend > /dev/null || pm2 start src/server.js --name "book-backend"
   args:
@@ -33,10 +34,30 @@
   register: pm2_result
   changed_when: "'starting' in pm2_result.stdout"
 
-- name: Start Frontend with PM2
-  shell: pm2 start npm --name "book-frontend" -- run dev
-  args:
-    chdir: "/home/{{ admin_username }}/app/frontend"
+# --- FRONTEND TASKS ---
+- name: Install Frontend dependencies
+  npm:
+    path: "/home/{{ admin_username }}/app/frontend"
   become: true
   become_user: "{{ admin_username }}"
 
+- name: Build Frontend for Production
+  shell: |
+    export PATH=$PATH:$(pwd)/node_modules/.bin
+    npm run build
+  args:
+    chdir: "/home/{{ admin_username }}/app/frontend"
+    executable: /bin/bash
+  become: true
+  become_user: "{{ admin_username }}"
+
+- name: Start Frontend with PM2
+  shell: |
+    export PATH=$PATH:$(pwd)/node_modules/.bin
+    pm2 delete book-frontend || true
+    pm2 start npm --name "book-frontend" -- start
+  args:
+    chdir: "/home/{{ admin_username }}/app/frontend"
+    executable: /bin/bash
+  become: true
+  become_user: "{{ admin_username }}"
