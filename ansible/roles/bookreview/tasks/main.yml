@@ -34,6 +34,35 @@
   register: pm2_result
   changed_when: "'starting' in pm2_result.stdout"
 
+- name: Run Database Migrations
+  shell: |
+    export PATH=$PATH:$(pwd)/node_modules/.bin
+    npx sequelize-cli db:migrate
+  args:
+    chdir: "/home/{{ admin_username }}/app/backend"
+  become: true
+  become_user: "{{ admin_username }}"
+
+- name: Seed Database with Initial Books
+  shell: |
+    export PATH=$PATH:$(pwd)/node_modules/.bin
+    npx sequelize-cli db:seed:all
+  args:
+    chdir: "/home/{{ admin_username }}/app/backend"
+  become: true
+  become_user: "{{ admin_username }}"
+  ignore_errors: yes # Prevents failure if books already exist
+
+- name: Build Frontend with API Path
+  shell: |
+    export PATH=$PATH:$(pwd)/node_modules/.bin
+    export NEXT_PUBLIC_API_URL=/api
+    npm run build
+  args:
+    chdir: "/home/{{ admin_username }}/app/frontend"
+  become: true
+  become_user: "{{ admin_username }}"
+
 # --- FRONTEND TASKS ---
 - name: Install Frontend dependencies
   npm:
@@ -41,9 +70,10 @@
   become: true
   become_user: "{{ admin_username }}"
 
-- name: Build Frontend for Production
+- name: Build Frontend with API URL
   shell: |
     export PATH=$PATH:$(pwd)/node_modules/.bin
+    export NEXT_PUBLIC_API_URL=/api
     npm run build
   args:
     chdir: "/home/{{ admin_username }}/app/frontend"
