@@ -23,6 +23,13 @@
   become_user: "{{ admin_username }}"
   notify: Restart backend
 
+- name: Start Frontend with PM2
+  shell: pm2 start npm --name "book-frontend" -- run dev
+  args:
+    chdir: "/home/{{ admin_username }}/app/frontend"
+  become: true
+  become_user: "{{ admin_username }}"
+
 - name: Start Application with PM2
   shell: |
     pm2 describe book-backend > /dev/null || pm2 start src/server.js --name "book-backend"
