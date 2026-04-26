@@ -1,84 +1,79 @@
 ---
+- name: Install System Dependencies
+  apt:
+    name:
+      - nodejs
+      - npm
+      - nginx
+      - mysql-client
+    state: present
+    update_cache: yes
+  become: true
+
+- name: Install PM2 globally
+  npm:
+    name: pm2
+    global: yes
+  become: true
+
 - name: Clone Book Review Repository
   git:
-    repo: "{{ app_repo }}"
+    repo: "https://github.com/pravinmishraaws/book-review-app.git"
     dest: "/home/{{ admin_username }}/app"
     version: main
     force: yes
   become: true
   become_user: "{{ admin_username }}"
 
-# --- BACKEND TASKS ---
+- name: Create Database if not exists
+  shell: |
+    mysql -h {{ db_host }} -u {{ mysql_admin_username }} -p'{{ mysql_admin_password }}' \
+    -e "CREATE DATABASE IF NOT EXISTS {{ db_name }};"
+  become: true
+  become_user: "{{ admin_username }}"
+  register: db_create
+  changed_when: "'1 row affected' in db_create.stdout"
+
+# --- BACKEND SETUP ---
 - name: Install Backend dependencies
   npm:
     path: "/home/{{ admin_username }}/app/backend"
   become: true
   become_user: "{{ admin_username }}"
 
-- name: Deploy Backend .env configuration
+- name: Configure Backend .env
   template:
     src: backend_env.j2
     dest: "/home/{{ admin_username }}/app/backend/.env"
-    mode: '0600'
   become: true
   become_user: "{{ admin_username }}"
-  notify: Restart backend
 
 - name: Start Backend with PM2
   shell: |
-    pm2 describe book-backend > /dev/null || pm2 start src/server.js --name "book-backend"
+    pm2 delete backend || true
+    pm2 start src/server.js --name "backend"
   args:
     chdir: "/home/{{ admin_username }}/app/backend"
   become: true
   become_user: "{{ admin_username }}"
-  register: pm2_result
-  changed_when: "'starting' in pm2_result.stdout"
 
-- name: Run Database Migrations
-  shell: |
-    export PATH=$PATH:$(pwd)/node_modules/.bin
-    npx sequelize-cli db:migrate
-  args:
-    chdir: "/home/{{ admin_username }}/app/backend"
-  become: true
-  become_user: "{{ admin_username }}"
-  environment:
-    NODE_ENV: production
-    # This environment variable tells the DB driver to use SSL but skip cert validation
-    DB_SSL_REJECT_UNAUTHORIZED: "false"
-    DB_SSL: "true"
-
-- name: Seed Database with Initial Books
-  shell: |
-    export PATH=$PATH:$(pwd)/node_modules/.bin
-    npx sequelize-cli db:seed:all
-  args:
-    chdir: "/home/{{ admin_username }}/app/backend"
-  become: true
-  become_user: "{{ admin_username }}"
-  ignore_errors: yes # Prevents failure if books already exist
-
-- name: Build Frontend with API Path
-  shell: |
-    export PATH=$PATH:$(pwd)/node_modules/.bin
-    export NEXT_PUBLIC_API_URL=/api
-    npm run build
-  args:
-    chdir: "/home/{{ admin_username }}/app/frontend"
-  become: true
-  become_user: "{{ admin_username }}"
-
-# --- FRONTEND TASKS ---
+# --- FRONTEND SETUP ---
 - name: Install Frontend dependencies
   npm:
     path: "/home/{{ admin_username }}/app/frontend"
   become: true
   become_user: "{{ admin_username }}"
 
-- name: Build Frontend with API URL
+- name: Configure Frontend .env
+  copy:
+    dest: "/home/{{ admin_username }}/app/frontend/.env"
+    content: "NEXT_PUBLIC_API_URL=/api"
+  become: true
+  become_user: "{{ admin_username }}"
+
+- name: Build Frontend (Next.js)
   shell: |
     export PATH=$PATH:$(pwd)/node_modules/.bin
-    export NEXT_PUBLIC_API_URL=/api
     npm run build
   args:
     chdir: "/home/{{ admin_username }}/app/frontend"
@@ -88,11 +83,9 @@
 
 - name: Start Frontend with PM2
   shell: |
-    export PATH=$PATH:$(pwd)/node_modules/.bin
-    pm2 delete book-frontend || true
-    pm2 start npm --name "book-frontend" -- start
+    pm2 delete frontend || true
+    pm2 start npm --name "frontend" -- start
   args:
     chdir: "/home/{{ admin_username }}/app/frontend"
-    executable: /bin/bash
   become: true
   become_user: "{{ admin_username }}"
