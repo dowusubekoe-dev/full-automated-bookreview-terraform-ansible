@@ -88,13 +88,23 @@
   become: true
   become_user: "{{ admin_username }}"
 
-- name: Build Frontend (Next.js)
+- name: Build Frontend with Environment Variable
   shell: |
     export PATH=$PATH:$(pwd)/node_modules/.bin
+    export NEXT_PUBLIC_API_URL=/api
     npm run build
   args:
     chdir: "/home/{{ admin_username }}/app/frontend"
     executable: /bin/bash
+  become: true
+  become_user: "{{ admin_username }}"
+
+- name: Restart Frontend Process
+  shell: |
+    pm2 delete frontend || true
+    pm2 start npm --name "frontend" -- start
+  args:
+    chdir: "/home/{{ admin_username }}/app/frontend"
   become: true
   become_user: "{{ admin_username }}"
 
