@@ -1,0 +1,17 @@
+- name: Apply Common System Updates
+  hosts: web
+  become: yes
+  roles:
+    - common
+
+- name: Install and Configure Nginx
+  hosts: web
+  become: yes
+  roles:
+    - nginx
+
+- name: Deploy Mini Finance Application
+  hosts: web
+  become: yes
+  roles:
+    - mini-finance
