@@ -68,3 +68,11 @@ yarn-error.log*
 .vscode/
 .idea/
 .DS_Store
+
+# ---------------------------
+# Ansible
+# ---------------------------
+*.retry
+*.pyc
+.ansible/
+inventory.ini

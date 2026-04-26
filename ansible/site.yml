@@ -14,4 +14,4 @@
   hosts: web
   become: yes
   roles:
-    - mini-finance
+    - bookreview
