@@ -1,9 +1,26 @@
 ---
-- name: Install System Dependencies
+- name: Remove broken or old Nodejs/NPM
+  apt:
+    name: ['nodejs', 'npm', 'node-shared']
+    state: absent
+    purge: yes
+  become: true
+
+- name: Install NodeSource setup requirements
+  apt:
+    name: ['curl', 'ca-certificates', 'gnupg']
+    state: present
+  become: true
+
+- name: Add NodeSource GPG key and repository (Node 20)
+  shell: |
+    curl -fsSL https://deb.nodesource.com/setup_20.x | bash -
+  become: true
+
+- name: Install Nodejs (includes NPM) and Nginx
   apt:
     name:
       - nodejs
-      - npm
       - nginx
       - mysql-client
     state: present
@@ -27,7 +44,7 @@
 
 - name: Create Database if not exists
   shell: |
-    mysql -h {{ db_host }} -u {{ mysql_admin_username }} -p'{{ mysql_admin_password }}' \
+    mysql -h {{ db_host }} -u {{ mysql_admin_username }} -p'{{ mysql_admin_password }}' --ssl-mode=REQUIRED \
     -e "CREATE DATABASE IF NOT EXISTS {{ db_name }};"
   become: true
   become_user: "{{ admin_username }}"
