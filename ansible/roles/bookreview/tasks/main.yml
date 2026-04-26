@@ -42,6 +42,11 @@
     chdir: "/home/{{ admin_username }}/app/backend"
   become: true
   become_user: "{{ admin_username }}"
+  environment:
+    NODE_ENV: production
+    # This environment variable tells the DB driver to use SSL but skip cert validation
+    DB_SSL_REJECT_UNAUTHORIZED: "false"
+    DB_SSL: "true"
 
 - name: Seed Database with Initial Books
   shell: |
